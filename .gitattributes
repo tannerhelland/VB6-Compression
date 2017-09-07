@@ -3,15 +3,31 @@
 
 # Custom for Visual Studio
 *.cs     diff=csharp
+*.sln    merge=union
+*.csproj merge=union
+*.vbproj merge=union
+*.fsproj merge=union
+*.dbproj merge=union
+*.ctx    -diff
+*.frx    -diff
+*.res    -diff
+*.RES    -diff
+*.bas    eol=crlf
+*.cls    eol=crlf
+*.ctl    eol=crlf
+*.frm    eol=crlf
+*.txt    eol=crlf
+*.vbp    eol=crlf
+*.md     eol=crlf
 
 # Standard to msysgit
 *.doc	 diff=astextplain
 *.DOC	 diff=astextplain
-*.docx diff=astextplain
-*.DOCX diff=astextplain
-*.dot  diff=astextplain
-*.DOT  diff=astextplain
-*.pdf  diff=astextplain
+*.docx   diff=astextplain
+*.DOCX   diff=astextplain
+*.dot    diff=astextplain
+*.DOT    diff=astextplain
+*.pdf    diff=astextplain
 *.PDF	 diff=astextplain
 *.rtf	 diff=astextplain
 *.RTF	 diff=astextplain

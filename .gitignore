@@ -301,3 +301,15 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+#############
+## Stuff unique to VB6
+#############
+
+*.log
+*.bak
+*.vbw
+*.zip
+/legacy version
+/zips
+CompressionDemo.exe
