@@ -251,7 +251,8 @@ Private Sub Form_Load()
     If Compression.InitializeCompressionEngine(PD_CE_ZLib, compressionDLLFolder) Then AddText "zLib initialized successfully!" Else AddText "zLib initialization failed (path = " & compressionDLLFolder & ")"
     If Compression.InitializeCompressionEngine(PD_CE_ZLibNG, compressionDLLFolder) Then AddText "zLib-ng initialized successfully!" Else AddText "zLib-ng initialization failed (path = " & compressionDLLFolder & ")"
     If Compression.InitializeCompressionEngine(PD_CE_Zstd, compressionDLLFolder) Then AddText "zstd initialized successfully!" Else AddText "zstd initialization failed (path = " & compressionDLLFolder & ")"
-    If Compression.InitializeCompressionEngine(PD_CE_Lz4, compressionDLLFolder) Then AddText "lz4/lz4_hc initialized successfully!" Else AddText "lz4/lz4_hc initialization failed (path = " & compressionDLLFolder & ")"
+    If Compression.InitializeCompressionEngine(PD_CE_Lz4, compressionDLLFolder) Then AddText "lz4 initialized successfully!" Else AddText "lz4 initialization failed (path = " & compressionDLLFolder & ")"
+    If Compression.InitializeCompressionEngine(PD_CE_Lz4HC, compressionDLLFolder) Then AddText "lz4_hc initialized successfully!" Else AddText "lz4hc initialization failed (path = " & compressionDLLFolder & ")"
     
     'The Windows compression engines come as a whole group - as long as you're on Windows 8 or later,
     ' they should always initialize successfully.

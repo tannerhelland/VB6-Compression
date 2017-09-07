@@ -22,7 +22,7 @@ Attribute VB_Name = "VBHacks"
 Option Explicit
 
 Public Declare Function FreeLibrary Lib "kernel32" (ByVal hLibModule As Long) As Long
-Public Declare Function LoadLibrary Lib "kernel32" Alias "LoadLibraryW" (ByVal lpLibFileName As Long) As Long
+Public Declare Function LoadLibraryW Lib "kernel32" (ByVal lpLibFileName As Long) As Long
 
 Private Declare Sub CopyMemoryStrict Lib "kernel32" Alias "RtlMoveMemory" (ByVal lpvDestPtr As Long, ByVal lpvSourcePtr As Long, ByVal cbCopy As Long)
 Private Declare Function GetVersionEx Lib "kernel32" Alias "GetVersionExW" (ByVal lpVersionInformation As Long) As Long
