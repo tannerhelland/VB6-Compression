@@ -15,8 +15,8 @@ Attribute VB_Exposed = False
 'Zstd Compression Library Interface
 'Copyright 2016-2017 by Tanner Helland
 'Created: 01/December/16
-'Last updated: 07/September/17
-'Last update: rewrite as a ICompress implementation
+'Last updated: 11/May/18
+'Last update: artificially limit max compression setting to reduce chances of rejected frames on x86
 '
 'Per its documentation (available at https://github.com/facebook/zstd), zstd is...
 '
@@ -39,7 +39,18 @@ Implements ICompress
 'These constants were originally declared in zstd.h
 Private Const ZSTD_MIN_CLEVEL As Long = 1
 Private Const ZSTD_DEFAULT_CLEVEL As Long = 3
-Private Const ZSTD_MAX_CLEVEL As Long = 22
+
+'Zstd supports higher compression levels (e.g. >= 20), but these "ultra-mode" compression levels require
+' large amounts of memory during both compression *and* decompression.  This limits its usefulness in VB6 projects,
+' which often target older, memory-limited PCs, and in fact I've already encountered situations "in the wild"
+' where Windows 10 PCs w/ 8 GB RAM reject valid zstd compression frames simply due to x86 memory limitations.
+' As such, I've artificially limited the maximum level to 19, and I *do not advise changing it*.
+' (For additional reading, see official project maintainer comments at https://github.com/facebook/zstd/issues/435,
+' e.g. "As long as you remain in the x64 PC world, using the official zstd cli, there will be no such problem.
+' Here, memory is plentyful. Problems will start to happen when trying to share such frames with lighter systems,
+' such as, for example, a mobile 32-bits ARM platform. These platforms will typically reject frames built with
+' levels 21 and 22.")
+Private Const ZSTD_MAX_CLEVEL As Long = 19
 
 Private Declare Function ZSTD_versionNumber Lib "libzstd" Alias "_ZSTD_versionNumber@0" () As Long
 Private Declare Function ZSTD_compress Lib "libzstd" Alias "_ZSTD_compress@20" (ByVal ptrToDstBuffer As Long, ByVal dstBufferCapacityInBytes As Long, ByVal constPtrToSrcBuffer As Long, ByVal srcSizeInBytes As Long, ByVal cCompressionLevel As Long) As Long
