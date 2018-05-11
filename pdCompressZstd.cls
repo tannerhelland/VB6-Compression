@@ -16,7 +16,8 @@ Attribute VB_Exposed = False
 'Copyright 2016-2017 by Tanner Helland
 'Created: 01/December/16
 'Last updated: 11/May/18
-'Last update: artificially limit max compression setting to reduce chances of rejected frames on x86
+'Last update: artificially limit max compression setting to reduce chances of rejected frames on x86;
+'             implement reusable compression/decompression contexts
 '
 'Per its documentation (available at https://github.com/facebook/zstd), zstd is...
 '
@@ -53,8 +54,22 @@ Private Const ZSTD_DEFAULT_CLEVEL As Long = 3
 Private Const ZSTD_MAX_CLEVEL As Long = 19
 
 Private Declare Function ZSTD_versionNumber Lib "libzstd" Alias "_ZSTD_versionNumber@0" () As Long
+
+'Basic compress/decompress functions.  Note that these create their own contexts on every call;
+' for reduced memory churn, it's preferable to reuse one compression and decompression context per-session.
 Private Declare Function ZSTD_compress Lib "libzstd" Alias "_ZSTD_compress@20" (ByVal ptrToDstBuffer As Long, ByVal dstBufferCapacityInBytes As Long, ByVal constPtrToSrcBuffer As Long, ByVal srcSizeInBytes As Long, ByVal cCompressionLevel As Long) As Long
 Private Declare Function ZSTD_decompress Lib "libzstd" Alias "_ZSTD_decompress@16" (ByVal ptrToDstBuffer As Long, ByVal dstBufferCapacityInBytes As Long, ByVal constPtrToSrcBuffer As Long, ByVal srcSizeInBytes As Long) As Long
+
+'Context creation/release and associated compression/decompression calls.  These are now used internally
+' by the class, which should reduce memory churn during long-running sessions.
+Private m_CompressionContext As Long, m_DecompressionContext As Long
+Private Declare Function ZSTD_createCCtx Lib "libzstd" Alias "_ZSTD_createCCtx@0" () As Long
+Private Declare Function ZSTD_freeCCtx Lib "libzstd" Alias "_ZSTD_freeCCtx@4" (ByVal srcCCtx As Long) As Long
+Private Declare Function ZSTD_compressCCtx Lib "libzstd" Alias "_ZSTD_compressCCtx@24" (ByVal srcCCtx As Long, ByVal ptrToDstBuffer As Long, ByVal dstBufferCapacityInBytes As Long, ByVal constPtrToSrcBuffer As Long, ByVal srcSizeInBytes As Long, ByVal cCompressionLevel As Long) As Long
+
+Private Declare Function ZSTD_createDCtx Lib "libzstd" Alias "_ZSTD_createDCtx@0" () As Long
+Private Declare Function ZSTD_freeDCtx Lib "libzstd" Alias "_ZSTD_freeDCtx@4" (ByVal srcDCtx As Long) As Long
+Private Declare Function ZSTD_decompressDCtx Lib "libzstd" Alias "_ZSTD_decompressDCtx@20" (ByVal srcDCtx As Long, ByVal ptrToDstBuffer As Long, ByVal dstBufferCapacityInBytes As Long, ByVal constPtrToSrcBuffer As Long, ByVal srcSizeInBytes As Long) As Long
 
 'These functions are not as self-explanatory as the ones above:
 Private Declare Function ZSTD_maxCLevel Lib "libzstd" Alias "_ZSTD_maxCLevel@0" () As Long  'Maximum compression level available
@@ -89,7 +104,16 @@ Private Function ICompress_InitializeEngine(ByRef pathToDLLFolder As String) As 
     
     'If we initialized the library successfully, cache some zstd-specific data
     If ICompress_InitializeEngine Then
+        
+        'Even if the library reports higher supported compression levels, artificially limit them to
+        ' known-safe values for our x86 build.
         m_ZstdCompressLevelMax = ZSTD_maxCLevel()
+        If (m_ZstdCompressLevelMax > ZSTD_MAX_CLEVEL) Then m_ZstdCompressLevelMax = ZSTD_MAX_CLEVEL
+        
+        'Create reusable compression and decompression contexts
+        m_CompressionContext = ZSTD_createCCtx()
+        m_DecompressionContext = ZSTD_createDCtx()
+        
     Else
         Debug.Print "WARNING!  LoadLibraryW failed to load zstd.  Last DLL error: " & Err.LastDllError
         Debug.Print "(FYI, the attempted path was: " & zstdPath & ")"
@@ -98,10 +122,24 @@ Private Function ICompress_InitializeEngine(ByRef pathToDLLFolder As String) As 
 End Function
 
 Private Sub ICompress_ReleaseEngine()
+    
     If (m_ZstdHandle <> 0) Then
+    
+        If (m_CompressionContext <> 0) Then
+            ZSTD_freeCCtx m_CompressionContext
+            m_CompressionContext = 0
+        End If
+        
+        If (m_DecompressionContext <> 0) Then
+            ZSTD_freeDCtx m_DecompressionContext
+            m_DecompressionContext = 0
+        End If
+        
         FreeLibrary m_ZstdHandle
         m_ZstdHandle = 0
+        
     End If
+    
 End Sub
 
 'Actual compression/decompression functions.  Only arrays and pointers are standardized.  It's assumed
@@ -117,7 +155,11 @@ Private Function ICompress_CompressPtrToDstArray(ByRef dstArray() As Byte, ByRef
     End If
     
     Dim finalSize As Long
-    finalSize = ZSTD_compress(VarPtr(dstArray(0)), dstCompressedSizeInBytes, constSrcPtr, constSrcSizeInBytes, compressionLevel)
+    If (m_CompressionContext <> 0) Then
+        finalSize = ZSTD_compressCCtx(m_CompressionContext, VarPtr(dstArray(0)), dstCompressedSizeInBytes, constSrcPtr, constSrcSizeInBytes, compressionLevel)
+    Else
+        finalSize = ZSTD_compress(VarPtr(dstArray(0)), dstCompressedSizeInBytes, constSrcPtr, constSrcSizeInBytes, compressionLevel)
+    End If
     
     'Check for error returns
     If (ZSTD_isError(finalSize) <> 0) Then
@@ -141,7 +183,11 @@ Private Function ICompress_CompressPtrToPtr(ByVal constDstPtr As Long, ByRef dst
     ValidateCompressionLevel compressionLevel
     
     Dim finalSize As Long
-    finalSize = ZSTD_compress(constDstPtr, dstSizeInBytes, constSrcPtr, constSrcSizeInBytes, compressionLevel)
+    If (m_CompressionContext <> 0) Then
+        finalSize = ZSTD_compressCCtx(m_CompressionContext, constDstPtr, dstSizeInBytes, constSrcPtr, constSrcSizeInBytes, compressionLevel)
+    Else
+        finalSize = ZSTD_compress(constDstPtr, dstSizeInBytes, constSrcPtr, constSrcSizeInBytes, compressionLevel)
+    End If
     ICompress_CompressPtrToPtr = (ZSTD_isError(finalSize) = 0)
     
     If ICompress_CompressPtrToPtr Then
@@ -159,7 +205,11 @@ Private Function ICompress_DecompressPtrToDstArray(ByRef dstArray() As Byte, ByV
     
     'Perform decompression
     Dim finalSize As Long
-    finalSize = ZSTD_decompress(VarPtr(dstArray(0)), constDstSizeInBytes, constSrcPtr, constSrcSizeInBytes)
+    If (m_DecompressionContext <> 0) Then
+        finalSize = ZSTD_decompressDCtx(m_DecompressionContext, VarPtr(dstArray(0)), constDstSizeInBytes, constSrcPtr, constSrcSizeInBytes)
+    Else
+        finalSize = ZSTD_decompress(VarPtr(dstArray(0)), constDstSizeInBytes, constSrcPtr, constSrcSizeInBytes)
+    End If
     
     'Check for error returns
     If (ZSTD_isError(finalSize) <> 0) Then
@@ -175,7 +225,11 @@ Private Function ICompress_DecompressPtrToPtr(ByVal constDstPtr As Long, ByVal c
     
     'Perform decompression
     Dim finalSize As Long
-    finalSize = ZSTD_decompress(constDstPtr, constDstSizeInBytes, constSrcPtr, constSrcSizeInBytes)
+    If (m_DecompressionContext <> 0) Then
+        finalSize = ZSTD_decompressDCtx(m_DecompressionContext, constDstPtr, constDstSizeInBytes, constSrcPtr, constSrcSizeInBytes)
+    Else
+        finalSize = ZSTD_decompress(constDstPtr, constDstSizeInBytes, constSrcPtr, constSrcSizeInBytes)
+    End If
     
     'Check for error returns
     If (ZSTD_isError(finalSize) <> 0) Then
@@ -206,7 +260,7 @@ Private Function ICompress_GetMinCompressionLevel() As Long
 End Function
 
 Private Function ICompress_GetMaxCompressionLevel() As Long
-    ICompress_GetMaxCompressionLevel = ZSTD_MAX_CLEVEL
+    ICompress_GetMaxCompressionLevel = m_ZstdCompressLevelMax
 End Function
 
 'Misc helper functions.  Name can be useful for user-facing reporting.
@@ -238,8 +292,8 @@ Private Sub ValidateCompressionLevel(ByRef inputLevel As Long)
         inputLevel = ZSTD_DEFAULT_CLEVEL
     ElseIf (inputLevel < ZSTD_MIN_CLEVEL) Then
         inputLevel = ZSTD_MIN_CLEVEL
-    ElseIf (inputLevel > ZSTD_MAX_CLEVEL) Then
-        inputLevel = ZSTD_MAX_CLEVEL
+    ElseIf (inputLevel > m_ZstdCompressLevelMax) Then
+        inputLevel = m_ZstdCompressLevelMax
     End If
 End Sub
 
