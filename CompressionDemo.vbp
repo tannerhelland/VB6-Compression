@@ -13,6 +13,7 @@ Class=pdCompressMSZip; pdCompressMSZip.cls
 Class=pdCompressXPress; pdCompressXPress.cls
 Class=pdCompressXPressHuff; pdCompressXPressHuff.cls
 Class=pdCompressLZMS; pdCompressLZMS.cls
+Class=pdCompressZThunk; pdCompressZThunk.cls
 IconForm="frmTest"
 Startup="frmTest"
 HelpFile=""
