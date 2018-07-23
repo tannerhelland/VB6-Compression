@@ -31,7 +31,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” 
 
 ------------------------------------------------------------------------
 
-** LZ4 license (simplified BSD) ** 
+**LZ4 license (simplified BSD)** 
 
 LZ4 Library
 Copyright (c) 2011-2016, Yann Collet
@@ -60,7 +60,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ------------------------------------------------------------------------
 
-** [ZipArchive license (MIT)](https://github.com/wqweto/ZipArchive/blob/master/LICENSE) ** 
+**[ZipArchive license (MIT)](https://github.com/wqweto/ZipArchive/blob/master/LICENSE)** 
 
 MIT License
 
@@ -86,7 +86,7 @@ SOFTWARE.
 
 ------------------------------------------------------------------------
 
-** zLib license (zLib) ** 
+**zLib license (zLib)** 
 
 zlib.h — interface of the ‘zlib’ general purpose compression library
 version 1.2.8, April 28th, 2013
@@ -114,7 +114,7 @@ jloup@gzip.org madler@alumni.caltech.edu
 
 ------------------------------------------------------------------------
 
-** zLib-ng license (zLib) ** 
+**zLib-ng license (zLib)** 
 
 zlib.h — interface of the ‘zlib’ general purpose compression library
 version 1.2.8, April 28th, 2013
@@ -142,7 +142,7 @@ jloup@gzip.org madler@alumni.caltech.edu
 
 ------------------------------------------------------------------------
 
-** ZStandard license (BSD) ** 
+**ZStandard license (BSD)** 
 
 Copyright (c) 2016-present, Facebook, Inc. All rights reserved.
 
