@@ -1,4 +1,4 @@
-The VB6 code supplied in this sample project is copyright © 2017 by Tanner Helland and Contributors.
+The VB6 code supplied in this sample project is copyright ¬© 2017 by Tanner Helland and Contributors.
 
 It is released under a BSD license.  A full copy of the BSD license is included below.
 
@@ -10,6 +10,7 @@ Full text of project and third-party plugin licenses follow.
 
 + PhotoDemon license
 + LZ4 license
++ ZipArchive license
 + zLib license
 + zLib-ng license
 + Zstd license
@@ -26,7 +27,7 @@ Redistribution and use in source and binary forms, with or without modification,
 +    Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
 +    Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ìAS ISî AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ‚ÄúAS IS‚Äù AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ------------------------------------------------------------------------
 
@@ -59,14 +60,40 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ------------------------------------------------------------------------
 
+** [ZipArchive license (MIT)](https://github.com/wqweto/ZipArchive/blob/master/LICENSE) ** 
+
+MIT License
+
+Copyright (c) 2017 Vladimir Vissoultchev
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+------------------------------------------------------------------------
+
 ** zLib license (zLib) ** 
 
-zlib.h ó interface of the ëzlibí general purpose compression library
+zlib.h ‚Äî interface of the ‚Äòzlib‚Äô general purpose compression library
 version 1.2.8, April 28th, 2013
 
 Copyright (C) 1995-2013 Jean-loup Gailly and Mark Adler
 
-This software is provided ëas-isí, without any express or implied
+This software is provided ‚Äòas-is‚Äô, without any express or implied
 warranty. In no event will the authors be held liable for any damages
 arising from the use of this software.
 
@@ -89,12 +116,12 @@ jloup@gzip.org madler@alumni.caltech.edu
 
 ** zLib-ng license (zLib) ** 
 
-zlib.h ó interface of the ëzlibí general purpose compression library
+zlib.h ‚Äî interface of the ‚Äòzlib‚Äô general purpose compression library
 version 1.2.8, April 28th, 2013
 
 Copyright (C) 1995-2013 Jean-loup Gailly and Mark Adler
 
-This software is provided ëas-isí, without any express or implied
+This software is provided ‚Äòas-is‚Äô, without any express or implied
 warranty. In no event will the authors be held liable for any damages
 arising from the use of this software.
 
