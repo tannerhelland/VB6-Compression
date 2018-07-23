@@ -288,7 +288,7 @@ Private Function ICompress_DecompressPtrToDstArray( _
     If (Not dstArrayIsAlreadySized) Then
         ReDim dstArray(0 To constDstSizeInBytes - 1) As Byte
     End If
-    If Not ICompress_CompressPtrToPtr(VarPtr(dstArray(0)), constDstSizeInBytes, _
+    If Not ICompress_DecompressPtrToPtr(VarPtr(dstArray(0)), constDstSizeInBytes, _
             constSrcPtr, constSrcSizeInBytes) Then
         GoTo QH
     End If
