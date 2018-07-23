@@ -253,6 +253,7 @@ Private Sub Form_Load()
     If Compression.InitializeCompressionEngine(PD_CE_Zstd, compressionDLLFolder) Then AddText "zstd initialized successfully!" Else AddText "zstd initialization failed (path = " & compressionDLLFolder & ")"
     If Compression.InitializeCompressionEngine(PD_CE_Lz4, compressionDLLFolder) Then AddText "lz4 initialized successfully!" Else AddText "lz4 initialization failed (path = " & compressionDLLFolder & ")"
     If Compression.InitializeCompressionEngine(PD_CE_Lz4HC, compressionDLLFolder) Then AddText "lz4_hc initialized successfully!" Else AddText "lz4hc initialization failed (path = " & compressionDLLFolder & ")"
+    If Compression.InitializeCompressionEngine(PD_CE_ZThunk, compressionDLLFolder) Then AddText "zthunk initialized successfully!" Else AddText "zthunk initialization failed (path = " & compressionDLLFolder & ")"
     
     'The Windows compression engines come as a whole group - as long as you're on Windows 8 or later,
     ' they should always initialize successfully.
@@ -264,7 +265,7 @@ Private Sub Form_Load()
     Else
         AddText "built-in Windows engines initialization failed - are you on Windows 8 or later?"
     End If
-    
+        
     'Please note that you also need to shut down any initialized compression engines when you're finished with them.
     ' This is demonstrated in the Form_Unload event of this sample project.
     
@@ -350,6 +351,10 @@ Private Sub StartTestOnFile(ByVal srcFilename As String, ByVal testName As Strin
             TestCompressionEngine PD_CE_Lz4HC, srcFilename, (Compression.GetMinCompressionLevel(PD_CE_Lz4HC) + Compression.GetMaxCompressionLevel(PD_CE_Lz4HC)) \ 2
             TestCompressionEngine PD_CE_Lz4HC, srcFilename, Compression.GetMaxCompressionLevel(PD_CE_Lz4HC)
         
+            TestCompressionEngine PD_CE_ZThunk, srcFilename, Compression.GetMinCompressionLevel(PD_CE_ZThunk)
+            TestCompressionEngine PD_CE_ZThunk, srcFilename, (Compression.GetMinCompressionLevel(PD_CE_ZThunk) + Compression.GetMaxCompressionLevel(PD_CE_ZThunk)) \ 2
+            TestCompressionEngine PD_CE_ZThunk, srcFilename, Compression.GetMaxCompressionLevel(PD_CE_ZThunk)
+        
         'By default, let's just test the default compression level for each library
         Else
             TestCompressionEngine PD_CE_ZLib, srcFilename
@@ -357,6 +362,7 @@ Private Sub StartTestOnFile(ByVal srcFilename As String, ByVal testName As Strin
             TestCompressionEngine PD_CE_Zstd, srcFilename
             TestCompressionEngine PD_CE_Lz4, srcFilename
             TestCompressionEngine PD_CE_Lz4HC, srcFilename
+            TestCompressionEngine PD_CE_ZThunk, srcFilename
         End If
         
     End If
@@ -567,6 +573,8 @@ Private Function GetCompressorName(ByVal whichEngine As PD_CompressionEngine) As
         GetCompressorName = "Lz4" & vbTab
     ElseIf (whichEngine = PD_CE_Lz4HC) Then
         GetCompressorName = "Lz4_HC" & vbTab
+    ElseIf (whichEngine = PD_CE_ZThunk) Then
+        GetCompressorName = "ZipThunk" & vbTab
     ElseIf (whichEngine = PD_CE_MSZIP) Then
         GetCompressorName = "MSZIP" & vbTab
     ElseIf (whichEngine = PD_CE_XPRESS) Then
