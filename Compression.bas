@@ -90,24 +90,25 @@ Public Enum PD_CompressionEngine
     'The following compression engines require a 3rd-party DLL
     PD_CE_ZLib = 1
     PD_CE_ZLibNG = 2
-    PD_CE_Zstd = 3
-    PD_CE_Lz4 = 4
-    PD_CE_Lz4HC = 5
+    PD_CE_LibDeflate = 3
+    PD_CE_Zstd = 4
+    PD_CE_Lz4 = 5
+    PD_CE_Lz4HC = 6
+    
+    'The following compression engines are standalone VB6 implementations
+    PD_CE_ZThunk = 7
     
     'The following compression engines are built-in on Windows 8 or later
-    PD_CE_MSZIP = 6
-    PD_CE_XPRESS = 7
-    PD_CE_XPRESS_HUFF = 8
-    PD_CE_LZMS = 9
-    
-    'The following compression engines are pure VB6 implementation
-    PD_CE_ZThunk = 10
+    PD_CE_MSZIP = 8
+    PD_CE_XPRESS = 9
+    PD_CE_XPRESS_HUFF = 10
+    PD_CE_LZMS = 11
     
     [_PD_CE_Last]
 End Enum
 
 #If False Then
-    Private Const PD_CE_NoCompression = 0, PD_CE_ZLib = 1, PD_CE_ZLibNG = 2, PD_CE_Zstd = 3, PD_CE_Lz4 = 4, PD_CE_Lz4HC = 5, PD_CE_MSZIP = 6, PD_CE_XPRESS = 7, PD_CE_XPRESS_HUFF = 8, PD_CE_LZMS = 9, PD_CE_ZThunk = 10
+    Private Const PD_CE_ZLib = 1, PD_CE_ZLibNG = 2, PD_CE_LibDeflate = 3, PD_CE_Zstd = 4, PD_CE_Lz4 = 5, PD_CE_Lz4HC = 6, PD_CE_ZThunk = 7, PD_CE_MSZIP = 8, PD_CE_XPRESS = 9, PD_CE_XPRESS_HUFF = 10, PD_CE_LZMS = 11
 #End If
 
 'Note that not all compression engines are available on all systems.  Some rely on 3rd-party DLLs; others require Win 8 or later.
@@ -141,6 +142,8 @@ Public Function InitializeCompressionEngine(ByVal whichEngine As PD_CompressionE
             Set m_Compressor(whichEngine) = New pdCompressZLibNG
         ElseIf (whichEngine = PD_CE_Zstd) Then
             Set m_Compressor(whichEngine) = New pdCompressZstd
+        ElseIf (whichEngine = PD_CE_LibDeflate) Then
+            Set m_Compressor(whichEngine) = New pdCompressLibDeflate
         ElseIf (whichEngine = PD_CE_Lz4) Then
             Set m_Compressor(whichEngine) = New pdCompressLz4
         ElseIf (whichEngine = PD_CE_Lz4HC) Then

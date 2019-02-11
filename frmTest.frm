@@ -247,9 +247,10 @@ Private Sub Form_Load()
     compressionDLLFolder = App.Path & "\Plugins\"
     
     'Remember that you only need to initialize the compression engines you'll actually be using.  Most people
-    ' won't need to deploy all three of these - I just do it here so you can see how they all work.
+    ' won't need to deploy all of these - I just do it here so you can see how they all work.
     If Compression.InitializeCompressionEngine(PD_CE_ZLib, compressionDLLFolder) Then AddText "zLib initialized successfully!" Else AddText "zLib initialization failed (path = " & compressionDLLFolder & ")"
     If Compression.InitializeCompressionEngine(PD_CE_ZLibNG, compressionDLLFolder) Then AddText "zLib-ng initialized successfully!" Else AddText "zLib-ng initialization failed (path = " & compressionDLLFolder & ")"
+    If Compression.InitializeCompressionEngine(PD_CE_LibDeflate, compressionDLLFolder) Then AddText "libdeflate initialized successfully!" Else AddText "libdeflate initialization failed (path = " & compressionDLLFolder & ")"
     If Compression.InitializeCompressionEngine(PD_CE_Zstd, compressionDLLFolder) Then AddText "zstd initialized successfully!" Else AddText "zstd initialization failed (path = " & compressionDLLFolder & ")"
     If Compression.InitializeCompressionEngine(PD_CE_Lz4, compressionDLLFolder) Then AddText "lz4 initialized successfully!" Else AddText "lz4 initialization failed (path = " & compressionDLLFolder & ")"
     If Compression.InitializeCompressionEngine(PD_CE_Lz4HC, compressionDLLFolder) Then AddText "lz4_hc initialized successfully!" Else AddText "lz4hc initialization failed (path = " & compressionDLLFolder & ")"
@@ -287,6 +288,7 @@ Private Sub Form_Unload(Cancel As Integer)
     Compression.ShutDownCompressionEngine PD_CE_ZLibNG
     Compression.ShutDownCompressionEngine PD_CE_Zstd
     Compression.ShutDownCompressionEngine PD_CE_Lz4
+    Compression.ShutDownCompressionEngine PD_CE_LibDeflate
     
     'Note that you do not need to shut down the built-in Windows compression engines (but if you do, there's no harm)
     
@@ -339,6 +341,10 @@ Private Sub StartTestOnFile(ByVal srcFilename As String, ByVal testName As Strin
             TestCompressionEngine PD_CE_ZLibNG, srcFilename, (Compression.GetMinCompressionLevel(PD_CE_ZLibNG) + Compression.GetMaxCompressionLevel(PD_CE_ZLibNG)) \ 2
             TestCompressionEngine PD_CE_ZLibNG, srcFilename, Compression.GetMaxCompressionLevel(PD_CE_ZLibNG)
             
+            TestCompressionEngine PD_CE_LibDeflate, srcFilename, Compression.GetMinCompressionLevel(PD_CE_LibDeflate)
+            TestCompressionEngine PD_CE_LibDeflate, srcFilename, (Compression.GetMinCompressionLevel(PD_CE_LibDeflate) + Compression.GetMaxCompressionLevel(PD_CE_LibDeflate)) \ 2
+            TestCompressionEngine PD_CE_LibDeflate, srcFilename, Compression.GetMaxCompressionLevel(PD_CE_LibDeflate)
+            
             TestCompressionEngine PD_CE_Zstd, srcFilename, Compression.GetMinCompressionLevel(PD_CE_Zstd)
             TestCompressionEngine PD_CE_Zstd, srcFilename, (Compression.GetMinCompressionLevel(PD_CE_Zstd) + Compression.GetMaxCompressionLevel(PD_CE_Zstd)) \ 2
             TestCompressionEngine PD_CE_Zstd, srcFilename, Compression.GetMaxCompressionLevel(PD_CE_Zstd)
@@ -359,6 +365,7 @@ Private Sub StartTestOnFile(ByVal srcFilename As String, ByVal testName As Strin
         Else
             TestCompressionEngine PD_CE_ZLib, srcFilename
             TestCompressionEngine PD_CE_ZLibNG, srcFilename
+            TestCompressionEngine PD_CE_LibDeflate, srcFilename
             TestCompressionEngine PD_CE_Zstd, srcFilename
             TestCompressionEngine PD_CE_Lz4, srcFilename
             TestCompressionEngine PD_CE_Lz4HC, srcFilename
@@ -567,6 +574,8 @@ Private Function GetCompressorName(ByVal whichEngine As PD_CompressionEngine) As
         GetCompressorName = "Zlib" & vbTab
     ElseIf (whichEngine = PD_CE_ZLibNG) Then
         GetCompressorName = "Zlib-ng" & vbTab
+    ElseIf (whichEngine = PD_CE_LibDeflate) Then
+        GetCompressorName = "libdeflate" & vbTab
     ElseIf (whichEngine = PD_CE_Zstd) Then
         GetCompressorName = "Zstd" & vbTab
     ElseIf (whichEngine = PD_CE_Lz4) Then
