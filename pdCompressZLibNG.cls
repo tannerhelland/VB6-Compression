@@ -44,10 +44,10 @@ Private Const ZLIB_MAX_CLEVEL = 9
 'This constant was originally declared (or rather, resolved) in deflate.c.
 Private Const ZLIB_DEFAULT_CLEVEL = 6
 
-Private Declare Function compress Lib "zlib-ng" Alias "_compress@16" (ByVal ptrToDestBuffer As Long, ByRef dstLen As Long, ByVal ptrToSrcBuffer As Long, ByVal srcLen As Long) As Long
-Private Declare Function compress2 Lib "zlib-ng" Alias "_compress2@20" (ByVal ptrDstBuffer As Long, ByRef dstLen As Long, ByVal ptrSrcBuffer As Any, ByVal srcLen As Long, ByVal cmpLevel As Long) As Long
-Private Declare Function uncompress Lib "zlib-ng" Alias "_uncompress@16" (ByVal ptrToDestBuffer As Long, ByRef dstLen As Long, ByVal ptrToSrcBuffer As Long, ByVal srcLen As Long) As Long
-Private Declare Function zlibVersion Lib "zlib-ng" Alias "_zlibVersion@0" () As Long
+Private Declare Function compress Lib "zlib-ng" (ByVal ptrToDestBuffer As Long, ByRef dstLen As Long, ByVal ptrToSrcBuffer As Long, ByVal srcLen As Long) As Long
+Private Declare Function compress2 Lib "zlib-ng" (ByVal ptrDstBuffer As Long, ByRef dstLen As Long, ByVal ptrSrcBuffer As Any, ByVal srcLen As Long, ByVal cmpLevel As Long) As Long
+Private Declare Function uncompress Lib "zlib-ng" (ByVal ptrToDestBuffer As Long, ByRef dstLen As Long, ByVal ptrToSrcBuffer As Long, ByVal srcLen As Long) As Long
+Private Declare Function zlibVersion Lib "zlib-ng" () As Long
 
 'A single zLib handle is maintained for the life of a class instance; see InitializeZLib and ReleaseZLib, below.
 Private m_ZLibHandle As Long
