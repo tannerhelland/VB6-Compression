@@ -117,27 +117,34 @@ Attribute VB_Exposed = False
 'Modern Compression Demonstration for VB6
 'Copyright 2016-2017 by Tanner Helland
 'Created: 02/December/16
-'Last updated: 05/September/17
-'Last update: update zstd and lz4 to latest stable builds; add zlib-ng; make output sortable;
-'             other minor bug-fixes and code cleanup
+'Last updated: 04/May/19
+'Last update: update zstd and lz4 to latest stable builds; convert zstd and lz4 wrappers to use
+'             standard cdecl interfaces - this lets us use official binaries instead of needing
+'             to manually compile stdcall versions.
 '
-'This small project demonstrates a simple interface for three major compression libraries -
-' zlib, zstd, and lz4/lz4_hc - as well as the built-in Windows Compression API (if you're on
-' Windows 8 or later).  The sample project also includes three small XML files in different
-' languages as its test base.  This is not a great way to demonstrate compression capabilities,
-' but vbforums.com makes it very difficult to attach larger files.  :/
+'This small project demonstrates a simple interface for a number of major open-source compression
+' libraries, as well as the built-in Windows Compression API (if you're on Windows 8 or later).
+' The sample project also includes three small XML files in different languages as a starting point
+' for comparisons, but I obviously recommend using larger files on your local PC for a more
+' comprehensive testing experience.
 '
-'To test your own files, drag/drop them onto the text box.  Larger files will generally provide
-' a more useful comparison.
+'To test your own files, drag/drop them onto the text box.
 '
 'I know people are curious about "but which compression engine is best?"  The answer is, "it depends
 ' on your needs."  In general...
 '
-' - zLib should really only be used in projects that specifically require the DEFLATE algorithm.
+' - zLib should really only be used in projects that specifically require the DEFLATE algorithm,
+'   and where you specifically require zlib's streaming API (not used by this wrapper).
 '
-' - zLib-ng is a "next-generation" version of zLib, developed by an outside team.  While it includes
-'   many performance improvements relative to stock zLib, these improvements don't seem to make a
-'   huge difference in typical workloads.  YMMV.
+' - libdeflate is a smaller, faster, cleaner implementation of the core zlib algorithms, with
+'   helper functions to perform zlib's same deflate/zlib/gz formats (which differ only in header
+'   and trailer/checksum behavior).  Use it in place of zlib for large performance and compression
+'   ratio improvements.
+'
+' - zLib-ng is a "next-generation" version of zLib, developed by an outside team (w/ additional
+'   contributions from Mark Adler, zlib's original author).  While it includes many performance
+'   improvements relative to stock zLib, these improvements are unlikely to affect typical workloads.
+'   YMMV, but this is not unexpected for 32-bit builds as most of their improvements focus on 64-bit.
 '
 ' - zstd is the best "general purpose" compressor.  It is faster than zLib at both compression and
 '   decompression, and it provides better compression at faster speeds.
@@ -154,25 +161,20 @@ Attribute VB_Exposed = False
 '
 ' zLib: BSD-style license (http://zlib.net/zlib_license.html)
 ' zLib-ng: BSD-style license (https://github.com/Dead2/zlib-ng/blob/develop/LICENSE.md)
+' libdeflate: MIT license (https://github.com/ebiggers/libdeflate/blob/master/COPYING)
 ' zstd: BSD 3-clause license (https://github.com/facebook/zstd/blob/dev/LICENSE)
 ' lz4/lz4-hc: BSD 2-clause license (https://github.com/lz4/lz4/blob/dev/LICENSE)
 '
-'The copies of these libraries included in this sample project were custom-built by me as stdcall variants
-' to simplify interop with VB.  Feel free to drop-in your own compiled copies, but note that the usual
-' caveats apply if you go with the stock cdecl versions - e.g. you will need to use a safe wrapper around
-' DispCallFunc, such as
-' http://www.vbforums.com/showthread.php?781595-VB6-Call-Functions-By-Pointer-(Universall-DLL-Calls)
+'zlib and zlib-ng have been custom-built for this project (to use stdcall interfaces).  All other libraries
+' are stock releases from their official projects, with DispCallFunc-based wrappers to enabled VB6 interop.
 '
 'Similarly, I've pulled all the Compression wrapper code from my open-source PhotoDemon project
 ' (www.photodemon.org), which is also BSD-licensed (http://photodemon.org/about/license/).  Just like the
 ' attached DLLs, you can use this code in any application, commercial or otherwise, as long as you provide
-' some small attribution note in your UI or documentation.  (And remember - the main purpose of attribution
-' is not vanity.  It's so that people know where to send bug reports if they run into anything unexpected.
-' Open-source projects can't be improved without input and testing from others!)
+' attribution in your UI or documentation.
 '
-'Happy coding,
-' Tanner H
-' (05 September 2017)
+'Bug reports and requests for additional libraries are always welcome.  Just submit an issue on GitHub:
+' https://github.com/tannerhelland/VB6-Compression
 '
 'All source code in this file is licensed under a modified BSD license.  This means you may use the code in your own
 ' projects IF you provide attribution.  For more information, please visit
@@ -508,7 +510,8 @@ Private Sub TestCompressionEngine(ByVal whichEngine As PD_CompressionEngine, ByR
             columnSeparator = vbTab & "|" & vbTab
             
             'As a failsafe, make sure the decompressed data is a byte-for-byte match against the original data
-            If VBHacks.MemCmp(VarPtr(fileBytes(0)), VarPtr(testDecompressionBytes(0)), originalSize) Then
+            Dim posOfMismatch As Long
+            If VBHacks.MemCmp(VarPtr(fileBytes(0)), VarPtr(testDecompressionBytes(0)), originalSize, posOfMismatch) Then
                 
                 'Convert the compression level into something a bit more readable
                 Dim cmpLevelText As String
@@ -550,15 +553,15 @@ Private Sub TestCompressionEngine(ByVal whichEngine As PD_CompressionEngine, ByR
                 m_NumOfResults = m_NumOfResults + 1
                 
             Else
-                AddText "WARNING! " & GetCompressorName(whichEngine) & " compression/decompression cycle was not lossless."
+                AddText "WARNING! " & Replace$(GetCompressorName(whichEngine), vbTab, vbNullString) & " compression/decompression cycle (level " & compressionLevel & ") was not lossless; mismatch occured at position " & posOfMismatch & " of " & originalSize & " bytes."
             End If
         
         Else
-            AddText "WARNING! " & GetCompressorName(whichEngine) & " decompression test failed for unknown reasons."
+            AddText "WARNING! " & Replace$(GetCompressorName(whichEngine), vbTab, vbNullString) & " decompression test (level " & compressionLevel & ") failed for unknown reasons."
         End If
     
     Else
-        AddText "WARNING! " & GetCompressorName(whichEngine) & " compression test failed for unknown reasons."
+        AddText "WARNING! " & Replace$(GetCompressorName(whichEngine), vbTab, vbNullString) & " compression test (level " & compressionLevel & ") failed for unknown reasons."
     End If
     
     'After the test, move the cursor to the end of the results textbox

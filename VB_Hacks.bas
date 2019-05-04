@@ -88,10 +88,11 @@ Public Sub GetHighResTime(ByRef dstTime As Currency)
     QueryPerformanceCounter dstTime
 End Sub
 
-Public Function MemCmp(ByVal ptr1 As Long, ByVal ptr2 As Long, ByVal bytesToCompare As Long) As Boolean
+Public Function MemCmp(ByVal ptr1 As Long, ByVal ptr2 As Long, ByVal bytesToCompare As Long, Optional ByRef dstPosMismatch As Long) As Boolean
     Dim bytesEqual As Long
     bytesEqual = RtlCompareMemory(ptr1, ptr2, bytesToCompare)
     MemCmp = CBool(bytesEqual = bytesToCompare)
+    If (Not MemCmp) Then dstPosMismatch = bytesEqual + 1 Else dstPosMismatch = -1
 End Function
 
 'Given an arbitrary pointer to a null-terminated CHAR or WCHAR run, measure the resulting string and copy the results
