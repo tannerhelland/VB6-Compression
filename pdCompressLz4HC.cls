@@ -115,11 +115,6 @@ Private Function ICompress_InitializeEngine(ByRef pathToDLLFolder As String) As 
         m_ProcAddresses(LZ4_decompress_safe) = GetProcAddress(m_Lz4Handle, "LZ4_decompress_safe")
         m_ProcAddresses(LZ4_compressBound) = GetProcAddress(m_Lz4Handle, "LZ4_compressBound")
         
-        Dim i As Long
-        For i = 0 To 4
-            Debug.Print m_ProcAddresses(i)
-        Next i
-        
         'Initialize all module-level arrays
         ReDim m_vType(0 To MAX_PARAM_COUNT - 1) As Integer
         ReDim m_vPtr(0 To MAX_PARAM_COUNT - 1) As Long
