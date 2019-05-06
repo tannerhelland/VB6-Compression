@@ -15,6 +15,7 @@ Class=pdCompressXPressHuff; pdCompressXPressHuff.cls
 Class=pdCompressLZMS; pdCompressLZMS.cls
 Class=pdCompressZThunk; pdCompressZThunk.cls
 Class=pdCompressLibDeflate; pdCompressLibDeflate.cls
+Class=pdCompressBrotli; pdCompressBrotli.cls
 IconForm="frmTest"
 Startup="frmTest"
 HelpFile=""
