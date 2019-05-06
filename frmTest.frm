@@ -20,31 +20,30 @@ Begin VB.Form frmTest
    ScaleMode       =   3  'Pixel
    ScaleWidth      =   821
    StartUpPosition =   3  'Windows Default
+   Begin VB.ComboBox cboLevel 
+      Height          =   375
+      Left            =   9360
+      Style           =   2  'Dropdown List
+      TabIndex        =   8
+      Top             =   420
+      Width           =   2775
+   End
    Begin VB.ComboBox cboSort 
       Height          =   375
       Left            =   1920
       Style           =   2  'Dropdown List
-      TabIndex        =   7
+      TabIndex        =   6
       Top             =   960
       Width           =   10215
-   End
-   Begin VB.CheckBox chkTestLevels 
-      BackColor       =   &H80000005&
-      Caption         =   "Test multiple compression levels"
-      Height          =   255
-      Left            =   7800
-      TabIndex        =   5
-      Top             =   480
-      Width           =   4335
    End
    Begin VB.CheckBox chkTestWindowsLibraries 
       BackColor       =   &H80000005&
       Caption         =   "Test built-in Windows libraries"
       Height          =   255
-      Left            =   3960
+      Left            =   3360
       TabIndex        =   4
       Top             =   480
-      Width           =   3615
+      Width           =   3135
    End
    Begin VB.CheckBox chkTest3rdParty 
       BackColor       =   &H80000005&
@@ -54,7 +53,7 @@ Begin VB.Form frmTest
       TabIndex        =   3
       Top             =   480
       Value           =   1  'Checked
-      Width           =   3615
+      Width           =   3135
    End
    Begin VB.TextBox txtResults 
       Height          =   6735
@@ -69,11 +68,22 @@ Begin VB.Form frmTest
    Begin VB.Label lblInfo 
       AutoSize        =   -1  'True
       BackStyle       =   0  'Transparent
+      Caption         =   "Compression level(s) to test:"
+      Height          =   255
+      Index           =   3
+      Left            =   6720
+      TabIndex        =   7
+      Top             =   480
+      Width           =   2475
+   End
+   Begin VB.Label lblInfo 
+      AutoSize        =   -1  'True
+      BackStyle       =   0  'Transparent
       Caption         =   "Sort test results by: "
       Height          =   255
       Index           =   2
       Left            =   120
-      TabIndex        =   6
+      TabIndex        =   5
       Top             =   990
       Width           =   1740
    End
@@ -216,15 +226,19 @@ End Enum
     Private Const sr_SortByName = 0, sr_SortByCompTime = 1, sr_SortByDecompTime = 2, sr_SortByCompRatio = 3, sr_SortByRatioVsTime = 4
 #End If
 
+'Quick flag to ensure all compression engines are loaded before we start running tests.
+' (Otherwise, setting the dropdown index at initialization time will start the tests prematurely.)
+Private m_ReadyToGo As Boolean
+
+Private Sub cboLevel_Click()
+    SetupTest m_LastTestedFile, m_LastTestedFile
+End Sub
+
 Private Sub cboSort_Click()
     SortAndDisplayResults
 End Sub
 
 Private Sub chkTest3rdParty_Click()
-    SetupTest m_LastTestedFile, m_LastTestedFile
-End Sub
-
-Private Sub chkTestLevels_Click()
     SetupTest m_LastTestedFile, m_LastTestedFile
 End Sub
 
@@ -234,6 +248,10 @@ End Sub
 
 Private Sub Form_Load()
     
+    'You don't need this line of code in your own project, but here, we want to measure how long each
+    ' compression test takes.  We do this with help from some Windows APIs that must be initialized in advance.
+    VBHacks.EnableHighResolutionTimers
+    
     'Add sort options
     cboSort.AddItem "Compressor name", 0
     cboSort.AddItem "Compression time (lower is better)", 1
@@ -242,9 +260,17 @@ Private Sub Form_Load()
     cboSort.AddItem "Compression Ratio vs Total Time (higher is better)", 4
     cboSort.ListIndex = 3
     
-    'Initialize the three compression DLLs.  You can store these DLLs wherever you want, but because these
-    ' compression libraries are popular, I *strongly* recommend you deploy them locally, inside your
-    ' program folder.
+    'Add compression level options
+    cboLevel.AddItem "Minimum levels", 0
+    cboLevel.AddItem "Default levels ", 1
+    cboLevel.AddItem "Maximum levels", 2
+    cboLevel.AddItem "All three levels", 3
+    cboLevel.ListIndex = 1
+    
+    'Initialize the three compression DLLs.  You can store these DLLs wherever you want, but because
+    ' these compression libraries are popular, I *strongly* recommend deploying them locally, inside
+    ' your program folder (or in any location where you won't mess with other copies deployed on the
+    ' system).
     Dim compressionDLLFolder As String
     compressionDLLFolder = App.Path & "\Plugins\"
     
@@ -272,13 +298,10 @@ Private Sub Form_Load()
     'Please note that you also need to shut down any initialized compression engines when you're finished with them.
     ' This is demonstrated in the Form_Unload event of this sample project.
     
-    'You don't need this line of code in your own project, but here, we want to measure how long each
-    ' compression test takes.  We do this with help from some Windows APIs that must be initialized in advance.
-    VBHacks.EnableHighResolutionTimers
-    
     'We're now going to do a quick test of all three compression engines, on three different XML files.
     ' For testing purposes, we're going to measure how well each file is compressed, and how long it takes to
     ' compress/decompress them.
+    m_ReadyToGo = True
     SetupTest
     
 End Sub
@@ -300,8 +323,11 @@ End Sub
 ' with the project.
 Private Sub SetupTest(Optional ByVal srcFilename As String = vbNullString, Optional ByVal testName As String = vbNullString)
     
+    'Failsafe check to ensure everything is loaded
+    If (Not m_ReadyToGo) Then Exit Sub
+    
     'If the caller supplies their own filename, run a test on that file only
-    If (Len(srcFilename) <> 0) Then
+    If (LenB(srcFilename) <> 0) Then
         StartTestOnFile srcFilename, testName
     
     'Otherwise, run a test on a highly compressible XML file included with this project
@@ -328,43 +354,25 @@ Private Sub StartTestOnFile(ByVal srcFilename As String, ByVal testName As Strin
     ' is non-trivial.)
     TestCompressionEngine PD_CE_NoCompression, srcFilename
     
+    Dim testMin As Boolean, testDefault As Boolean, testMax As Boolean
+    testMin = (cboLevel.ListIndex = 0) Or (cboLevel.ListIndex = 3)
+    testDefault = (cboLevel.ListIndex = 1) Or (cboLevel.ListIndex = 3)
+    testMax = (cboLevel.ListIndex = 2) Or (cboLevel.ListIndex = 3)
+    
     'If the user wants 3rd-party libraries tested, do them now
     If CBool(chkTest3rdParty.Value) Then
     
-        'If the caller wants different compression levels tested, we will run three tests on each library:
-        ' the minimum level, (min + max) / 2 level, and maximum level.
-        If CBool(chkTestLevels.Value) Then
-        
+        If testMin Then
             TestCompressionEngine PD_CE_ZLib, srcFilename, Compression.GetMinCompressionLevel(PD_CE_ZLib)
-            TestCompressionEngine PD_CE_ZLib, srcFilename, (Compression.GetMinCompressionLevel(PD_CE_ZLib) + Compression.GetMaxCompressionLevel(PD_CE_ZLib)) \ 2
-            TestCompressionEngine PD_CE_ZLib, srcFilename, Compression.GetMaxCompressionLevel(PD_CE_ZLib)
-            
             TestCompressionEngine PD_CE_ZLibNG, srcFilename, Compression.GetMinCompressionLevel(PD_CE_ZLibNG)
-            TestCompressionEngine PD_CE_ZLibNG, srcFilename, (Compression.GetMinCompressionLevel(PD_CE_ZLibNG) + Compression.GetMaxCompressionLevel(PD_CE_ZLibNG)) \ 2
-            TestCompressionEngine PD_CE_ZLibNG, srcFilename, Compression.GetMaxCompressionLevel(PD_CE_ZLibNG)
-            
             TestCompressionEngine PD_CE_LibDeflate, srcFilename, Compression.GetMinCompressionLevel(PD_CE_LibDeflate)
-            TestCompressionEngine PD_CE_LibDeflate, srcFilename, (Compression.GetMinCompressionLevel(PD_CE_LibDeflate) + Compression.GetMaxCompressionLevel(PD_CE_LibDeflate)) \ 2
-            TestCompressionEngine PD_CE_LibDeflate, srcFilename, Compression.GetMaxCompressionLevel(PD_CE_LibDeflate)
-            
             TestCompressionEngine PD_CE_Zstd, srcFilename, Compression.GetMinCompressionLevel(PD_CE_Zstd)
-            TestCompressionEngine PD_CE_Zstd, srcFilename, (Compression.GetMinCompressionLevel(PD_CE_Zstd) + Compression.GetMaxCompressionLevel(PD_CE_Zstd)) \ 2
-            TestCompressionEngine PD_CE_Zstd, srcFilename, Compression.GetMaxCompressionLevel(PD_CE_Zstd)
-            
             TestCompressionEngine PD_CE_Lz4, srcFilename, Compression.GetMinCompressionLevel(PD_CE_Lz4)
-            TestCompressionEngine PD_CE_Lz4, srcFilename, (Compression.GetMinCompressionLevel(PD_CE_Lz4) + Compression.GetMaxCompressionLevel(PD_CE_Lz4)) \ 2
-            TestCompressionEngine PD_CE_Lz4, srcFilename, Compression.GetMaxCompressionLevel(PD_CE_Lz4)
-            
             TestCompressionEngine PD_CE_Lz4HC, srcFilename, Compression.GetMinCompressionLevel(PD_CE_Lz4HC)
-            TestCompressionEngine PD_CE_Lz4HC, srcFilename, (Compression.GetMinCompressionLevel(PD_CE_Lz4HC) + Compression.GetMaxCompressionLevel(PD_CE_Lz4HC)) \ 2
-            TestCompressionEngine PD_CE_Lz4HC, srcFilename, Compression.GetMaxCompressionLevel(PD_CE_Lz4HC)
-        
             TestCompressionEngine PD_CE_ZThunk, srcFilename, Compression.GetMinCompressionLevel(PD_CE_ZThunk)
-            TestCompressionEngine PD_CE_ZThunk, srcFilename, (Compression.GetMinCompressionLevel(PD_CE_ZThunk) + Compression.GetMaxCompressionLevel(PD_CE_ZThunk)) \ 2
-            TestCompressionEngine PD_CE_ZThunk, srcFilename, Compression.GetMaxCompressionLevel(PD_CE_ZThunk)
+        End If
         
-        'By default, let's just test the default compression level for each library
-        Else
+        If testDefault Then
             TestCompressionEngine PD_CE_ZLib, srcFilename
             TestCompressionEngine PD_CE_ZLibNG, srcFilename
             TestCompressionEngine PD_CE_LibDeflate, srcFilename
@@ -374,10 +382,21 @@ Private Sub StartTestOnFile(ByVal srcFilename As String, ByVal testName As Strin
             TestCompressionEngine PD_CE_ZThunk, srcFilename
         End If
         
+        If testMax Then
+            TestCompressionEngine PD_CE_ZLib, srcFilename, Compression.GetMaxCompressionLevel(PD_CE_ZLib)
+            TestCompressionEngine PD_CE_ZLibNG, srcFilename, Compression.GetMaxCompressionLevel(PD_CE_ZLibNG)
+            TestCompressionEngine PD_CE_LibDeflate, srcFilename, Compression.GetMaxCompressionLevel(PD_CE_LibDeflate)
+            TestCompressionEngine PD_CE_Zstd, srcFilename, Compression.GetMaxCompressionLevel(PD_CE_Zstd)
+            TestCompressionEngine PD_CE_Lz4, srcFilename, Compression.GetMaxCompressionLevel(PD_CE_Lz4)
+            TestCompressionEngine PD_CE_Lz4HC, srcFilename, Compression.GetMaxCompressionLevel(PD_CE_Lz4HC)
+            TestCompressionEngine PD_CE_ZThunk, srcFilename, Compression.GetMaxCompressionLevel(PD_CE_ZThunk)
+        End If
+        
     End If
     
-    'If the user wants Windows libraries tested, do them last.  Note that these do not support different
-    ' compression levels, so each test is only run once.
+    'If the user wants Windows libraries tested, do them last.  Note that regardless of the "test these levels"
+    ' setting, each test is only run once because the built-in Windows libraries do not support variable
+    ' compression levels.
     If CBool(chkTestWindowsLibraries.Value) Then
         TestCompressionEngine PD_CE_MSZIP, srcFilename
         TestCompressionEngine PD_CE_XPRESS, srcFilename
