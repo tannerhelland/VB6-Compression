@@ -1,12 +1,14 @@
-# VB6 Compression API wrapper(s)
+# VB6 compression library wrapper(s)
 
-This project provides convenient VB6 wrappers for multiple compression APIs, including...
+This project provides convenient VB6 wrappers for a variety of compression libraries, including...
 * zLib -- https://github.com/madler/zlib
 * zLib-ng -- https://github.com/Dead2/zlib-ng
+* libdeflate -- https://github.com/ebiggers/libdeflate
 * zstd -- https://github.com/facebook/zstd
 * lz4 -- https://github.com/lz4/lz4
-* ZipArchive -- https://github.com/wqweto/ZipArchive
-* Microsoft Compression APIs (Win 8+ only) -- https://msdn.microsoft.com/en-us/library/windows/desktop/hh920921(v=vs.85).aspx
+* brotli -- https://github.com/google/brotli
+* ZipArchive (zero-dependency VB6 lib derived from PuTTY) -- https://github.com/wqweto/ZipArchive
+* Microsoft Compression APIs (Win 8+ only) -- https://docs.microsoft.com/en-us/windows/desktop/cmpapi/-compression-portal
 
 A small sample project allows you to compare compression time, decompression time, and compression ratio across all libraries.  Drag+drop a file onto the text box to test it.
 
