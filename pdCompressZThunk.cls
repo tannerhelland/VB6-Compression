@@ -226,7 +226,7 @@ Private Function ICompress_CompressPtrToDstArray( _
         GoTo QH
     End If
     'Trim the destination array, as requested
-    If trimCompressedArray And ICompress_CompressPtrToDstArray Then
+    If trimCompressedArray Then
         If (UBound(dstArray) <> dstCompressedSizeInBytes - 1) Then
             ReDim Preserve dstArray(0 To dstCompressedSizeInBytes - 1) As Byte
         End If
